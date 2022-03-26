@@ -7,7 +7,7 @@ This is a flashcard app that allows the user to add, save, and scroll through as
 
 ### App Walk-though
 
-<img src="https://imgur.com/b3bUxOV.gif" width=200><br>
+<img src="https://imgur.com/bFHaZnw.gif" width=200><br>
 
 
 ## Required
