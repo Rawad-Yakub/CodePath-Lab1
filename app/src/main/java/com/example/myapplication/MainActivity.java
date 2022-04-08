@@ -4,9 +4,13 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.animation.Animator;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewAnimationUtils;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -50,9 +54,47 @@ public class MainActivity extends AppCompatActivity {
         flashcardQuestion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                findViewById(R.id.flashcard_answer).setVisibility(View.VISIBLE);
-                findViewById(R.id.flashcard_answer2).setVisibility(View.VISIBLE);
-                findViewById(R.id.flashcard_answer3).setVisibility(View.VISIBLE);
+//                findViewById(R.id.flashcard_answer).setVisibility(View.VISIBLE);
+  //              findViewById(R.id.flashcard_answer2).setVisibility(View.VISIBLE);
+    //            findViewById(R.id.flashcard_answer3).setVisibility(View.VISIBLE);
+
+                View answerSideView = findViewById(R.id.flashcard_answer);
+                View answerSideView2 = findViewById(R.id.flashcard_answer2);
+                View answerSideView3 = findViewById(R.id.flashcard_answer3);
+
+// get the center for the clipping circle
+                int cx = answerSideView.getWidth() / 2;
+                int cy = answerSideView.getHeight() / 2;
+                int ca = answerSideView2.getWidth() / 2;
+                int cb = answerSideView2.getHeight() / 2;
+                int cd = answerSideView3.getWidth() / 2;
+                int ce = answerSideView3.getHeight() / 2;
+
+
+// get the final radius for the clipping circle
+                float finalRadius = (float) Math.hypot(cx, cy);
+                float finalRadius2 = (float) Math.hypot(ca, cb);
+                float finalRadius3 = (float) Math.hypot(cd, ce);
+
+// create the animator for this view (the start radius is zero)
+                Animator anim = ViewAnimationUtils.createCircularReveal(answerSideView, cx, cy, 0f, finalRadius);
+                Animator anim2 = ViewAnimationUtils.createCircularReveal(answerSideView2, ca, cb, 0f, finalRadius2);
+                Animator anim3 = ViewAnimationUtils.createCircularReveal(answerSideView3, cd, ce, 0f, finalRadius3);
+
+
+// hide the question and show the answer to prepare for playing the animation!
+                flashcardQuestion.setVisibility(View.INVISIBLE);
+                answerSideView.setVisibility(View.VISIBLE);
+                answerSideView2.setVisibility(View.VISIBLE);
+                answerSideView3.setVisibility(View.VISIBLE);
+
+
+                anim.setDuration(2000);
+                anim2.setDuration(2000);
+                anim3.setDuration(2000);
+                anim.start();
+                anim2.start();
+                anim3.start();
 
 
             }
@@ -85,8 +127,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent gotoAddCard = new Intent(MainActivity.this, AddCardActivity.class);
- //                   startActivity(gotoAddCard);
-                startActivityForResult(gotoAddCard, 100);
+                //startActivity(gotoAddCard);
+                MainActivity.this.startActivityForResult(gotoAddCard, 100);
+                overridePendingTransition(R.anim.right_in, R.anim.left_out);
 
 
             }
@@ -132,14 +175,42 @@ public class MainActivity extends AppCompatActivity {
                     currentDisplayedIndex = 0;
                 }
 
-                Flashcard currentcard = allFlashcards.get(currentDisplayedIndex);
-                flashcardQuestion.setText(currentcard.getQuestion());
-                flashcardAnswer.setText(currentcard.getAnswer());
-                flashcardAnswer2.setText(currentcard.getWrongAnswer1());
-                flashcardAnswer3.setText(currentcard.getWrongAnswer2());
 
 
+                final Animation leftOutAnim = AnimationUtils.loadAnimation(v.getContext(), R.anim.left_out);
+                final Animation rightInAnim = AnimationUtils.loadAnimation(v.getContext(), R.anim.right_in);
 
+                leftOutAnim.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+
+                        flashcardQuestion.startAnimation(rightInAnim);
+
+                        Flashcard currentcard = allFlashcards.get(currentDisplayedIndex);
+                        flashcardQuestion.setText(currentcard.getQuestion());
+                        flashcardAnswer.setText(currentcard.getAnswer());
+                        flashcardAnswer2.setText(currentcard.getWrongAnswer1());
+                        flashcardAnswer3.setText(currentcard.getWrongAnswer2());
+
+                        flashcardQuestion.setVisibility(View.VISIBLE);
+                        flashcardAnswer.setVisibility(View.INVISIBLE);
+                        flashcardAnswer2.setVisibility(View.INVISIBLE);
+                        flashcardAnswer3.setVisibility(View.INVISIBLE);
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+
+                flashcardQuestion.startAnimation(leftOutAnim);
 
             }
         });
